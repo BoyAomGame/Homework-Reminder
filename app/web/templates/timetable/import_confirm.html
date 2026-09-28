@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}ตรวจตารางเรียน — เตือนการบ้าน{% endblock %}
+{% block content %}
+<h1>ตรวจตารางเรียนที่นำเข้า</h1>
+<p class="muted">
+  แก้ไขข้อมูลที่ AI อ่านผิด ลบชื่อวิชาเพื่อตัดแถวนั้นออก
+  <strong>การบันทึกจะแทนที่ตารางเรียนเดิมทั้งหมด</strong>
+</p>
+
+<div class="card">
+  <form method="post" action="/timetable/import/confirm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <table>
+      <tr>
+        <th>วัน</th><th>คาบ</th><th>วิชา</th>
+        <th>ครู</th><th>ห้อง</th><th>เริ่ม</th><th>จบ</th>
+      </tr>
+      {% for row in rows %}
+      <tr>
+        <td>
+          <select name="day_of_week">
+            {% for name in day_names %}
+            <option value="{{ loop.index0 }}" {{ 'selected' if loop.index0 == row.day_of_week }}>{{ name }}</option>
+            {% endfor %}
+          </select>
+        </td>
+        <td><input type="number" name="period_number" min="1" max="20" value="{{ row.period_number }}"></td>
+        <td><input type="text" name="subject_name" value="{{ row.subject_name }}"></td>
+        <td><input type="text" name="teacher_name" value="{{ row.teacher_name or '' }}"></td>
+        <td><input type="text" name="room" value="{{ row.room or '' }}"></td>
+        <td><input type="time" name="start_time" value="{{ row.start_time.strftime('%H:%M') if row.start_time else '' }}"></td>
+        <td><input type="time" name="end_time" value="{{ row.end_time.strftime('%H:%M') if row.end_time else '' }}"></td>
+      </tr>
+      {% endfor %}
+    </table>
+    <br>
+    <div class="actions">
+      <button type="submit">บันทึกตารางเรียน</button>
+      <a class="button secondary" href="/timetable/import">เลือกรูปใหม่</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

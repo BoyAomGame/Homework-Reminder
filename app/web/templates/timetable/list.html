@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}ตารางเรียน — เตือนการบ้าน{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>ตารางเรียนรายสัปดาห์</h1>
+  <a class="button secondary" href="/timetable/import">📷 นำเข้าจากรูป</a>
+</div>
+<p class="muted">
+  ใช้เติมชื่อครู ห้อง และเวลาส่งอัตโนมัติเมื่อเพิ่มการบ้านผ่านบอต
+  หากไม่กรอกเวลาเริ่ม จะใช้ค่าเริ่มต้น (คาบ 1 เวลา 08:30 น. คาบละ 50 นาที)
+</p>
+
+<div class="card">
+  {% if entries %}
+  <table>
+    <tr>
+      <th>วัน</th><th>คาบ</th><th>เริ่ม</th><th>วิชา</th>
+      <th>ครู</th><th>ห้อง</th><th></th>
+    </tr>
+    {% for e in entries %}
+    <tr>
+      <td>{{ day_names[e.day_of_week] }}</td>
+      <td>{{ e.period_number }}</td>
+      <td>
+        {{ effective_start_time(e).strftime('%H:%M') }}
+        {% if not e.start_time %}<span class="muted">(ค่าเริ่มต้น)</span>{% endif %}
+      </td>
+      <td>{{ e.subject_name }}</td>
+      <td>{{ e.teacher_name or '—' }}</td>
+      <td>{{ e.room or '—' }}</td>
+      <td>
+        <form method="post" action="/timetable/{{ e.id }}/delete" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="small danger">ลบ</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">ยังไม่มีตารางเรียน เพิ่มคาบด้านล่างหรือนำเข้าจากรูป</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>เพิ่ม / แทนที่คาบเรียน</h2>
+  <form method="post" action="/timetable" class="stack" style="max-width:100%">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <fieldset class="compact">
+      <label>วัน
+        <select name="day_of_week">
+          {% for name in day_names %}
+          <option value="{{ loop.index0 }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>คาบ
+        <input type="number" name="period_number" min="1" max="20" value="1" required>
+      </label>
+      <label>เวลาเริ่ม (ไม่บังคับ)
+        <input type="time" name="start_time">
+      </label>
+      <label>เวลาจบ (ไม่บังคับ)
+        <input type="time" name="end_time">
+      </label>
+    </fieldset>
+    <fieldset class="compact">
+      <label>วิชา *
+        <input type="text" name="subject_name" required>
+      </label>
+      <label>ครู
+        <input type="text" name="teacher_name">
+      </label>
+      <label>ห้อง
+        <input type="text" name="room">
+      </label>
+    </fieldset>
+    <div><button type="submit">บันทึกคาบเรียน</button></div>
+  </form>
+</div>
+{% endblock %}

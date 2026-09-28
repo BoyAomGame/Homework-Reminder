@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}ตั้งค่า — เตือนการบ้าน{% endblock %}
+{% block content %}
+<h1>ตั้งค่า</h1>
+
+<div class="card">
+  <h2>บริการ AI</h2>
+  <p class="muted">ใช้บริการที่รองรับ OpenAI Chat Completions เช่น DeepSeek สำหรับอ่านข้อความใน Discord ส่วนการอ่านภาพตารางเรียนต้องใช้โมเดลที่รองรับภาพ</p>
+  <form method="post" action="/settings/ai" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>URL บริการอ่านข้อความ
+      <input type="url" name="text_base_url" required value="{{ ai.text_base_url if ai else 'https://api.deepseek.com/v1' }}">
+    </label>
+    <label>ชื่อโมเดลอ่านข้อความ
+      <input type="text" name="text_model" required value="{{ ai.text_model if ai else 'deepseek-chat' }}">
+    </label>
+    <label>API Key ข้อความ {{ '(บันทึกแล้ว)' if ai and ai.text_api_key_encrypted else '' }}
+      <input type="password" name="text_api_key" autocomplete="new-password" placeholder="เว้นว่างเพื่อใช้ค่าเดิม">
+    </label>
+    <hr>
+    <label>URL บริการอ่านภาพ (เว้นว่างเพื่อใช้ URL ข้อความ)
+      <input type="url" name="vision_base_url" value="{{ ai.vision_base_url if ai else '' }}">
+    </label>
+    <label>ชื่อโมเดลอ่านภาพ
+      <input type="text" name="vision_model" value="{{ ai.vision_model if ai else '' }}">
+    </label>
+    <label>API Key ภาพ {{ '(บันทึกแล้ว)' if ai and ai.vision_api_key_encrypted else '' }}
+      <input type="password" name="vision_api_key" autocomplete="new-password" placeholder="เว้นว่างเพื่อใช้ค่าเดิม หรือใช้คีย์ข้อความ">
+    </label>
+    <div><button type="submit">บันทึกการตั้งค่า AI</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>บอต Discord</h2>
+  {% if bot %}
+    <p>สถานะ: <span class="badge {{ bot.status.value }}">{{ {'stopped':'หยุด','starting':'กำลังเชื่อมต่อ','running':'ทำงาน','error':'มีปัญหา'}[bot.status.value] }}</span>
+      {% if not bot.enabled %}<span class="badge stopped">ปิดใช้งาน</span>{% endif %}</p>
+    {% if bot.last_error %}<p class="flash error">{{ bot.last_error }}</p>{% endif %}
+    {% if bot.discord_user_id %}
+      <p>เชื่อมบัญชี Discord แล้ว: <span class="mono">{{ bot.discord_user_id }}</span> ✔</p>
+    {% elif bot.link_code %}
+      <p>ส่งรหัสนี้ทางข้อความส่วนตัวถึงบอตเพื่อเชื่อมบัญชี Discord:</p>
+      <p class="stat mono">{{ bot.link_code }}</p>
+    {% endif %}
+    <div class="actions">
+      <form method="post" action="/settings/bot/enabled" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="enabled" value="{{ '0' if bot.enabled else '1' }}">
+        <button type="submit" class="secondary">{{ 'ปิดบอต' if bot.enabled else 'เปิดบอต' }}</button>
+      </form>
+      <form method="post" action="/settings/link-code" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="secondary">สร้างรหัสเชื่อมใหม่</button>
+      </form>
+      <form method="post" action="/settings/bot-token/delete" class="inline" onsubmit="return confirm('ลบโทเคนและหยุดบอต?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="danger">ลบโทเคน</button>
+      </form>
+    </div>
+    <hr>
+    <p class="muted">เปลี่ยนโทเคนที่บันทึกไว้ (โทเคนถูกเข้ารหัสและจะไม่แสดงอีก):</p>
+  {% else %}
+    <p class="muted">สร้างบอตที่ <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Developer Portal</a> เปิด Message Content Intent แล้วนำโทเคนมาใส่ที่นี่ บอตจะตอบเฉพาะข้อความส่วนตัวจากบัญชีที่เชื่อมไว้</p>
+  {% endif %}
+  <form method="post" action="/settings/bot-token" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>โทเคนบอต
+      <input type="password" name="bot_token" required autocomplete="off" placeholder="วางโทเคนบอต Discord">
+    </label>
+    <div><button type="submit">{{ 'เปลี่ยนโทเคน' if bot else 'เพิ่มบอต' }}</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>เวลาแจ้งเตือน</h2>
+  <p class="muted">กรอกจำนวนนาทีก่อนกำหนดส่ง คั่นด้วยจุลภาค เช่น 1440 = 1 วัน, 180 = 3 ชั่วโมง, 0 = ตรงเวลา</p>
+  <form method="post" action="/settings/reminders" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>นาทีก่อนกำหนดส่ง
+      <input type="text" name="offsets" value="{{ user.reminder_offsets | join(', ') }}">
+    </label>
+    <div><button type="submit">บันทึก</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}ภาพรวม — เตือนการบ้าน{% endblock %}
+{% block content %}
+<h1>ภาพรวมของ {{ user.email }}</h1>
+
+<div class="card-grid">
+  <div class="card">
+    <h2>การบ้านที่ยังไม่เสร็จ</h2>
+    <p class="stat">{{ pending_count }}</p>
+    <p class="muted">ทำเสร็จแล้ว {{ done_count }} รายการ</p>
+  </div>
+
+  <div class="card">
+    <h2>บอต Discord</h2>
+    {% if bot %}
+      <p><span class="badge {{ bot.status.value }}">{{ {'stopped':'หยุด','starting':'กำลังเชื่อมต่อ','running':'ทำงาน','error':'มีปัญหา'}[bot.status.value] }}</span></p>
+      {% if bot.discord_user_id %}
+        <p class="muted">เชื่อมบัญชี Discord แล้ว ✔</p>
+      {% elif bot.link_code %}
+        <p>ยังไม่เชื่อมบัญชี ส่งรหัสนี้ทางข้อความส่วนตัวถึงบอต:</p>
+        <p class="stat mono">{{ bot.link_code }}</p>
+      {% endif %}
+      {% if bot.last_error %}<p class="flash error">{{ bot.last_error }}</p>{% endif %}
+    {% else %}
+      <p class="muted">ยังไม่มีบอต เพิ่มโทเคนบอตในหน้า<a href="/settings">ตั้งค่า</a></p>
+    {% endif %}
+  </div>
+</div>
+
+{% if overdue %}
+<div class="card">
+  <h2>เลยกำหนดส่ง</h2>
+  <table>
+    {% for a in overdue %}
+    <tr class="overdue">
+      <td>{{ a.subject_name }}{% if a.location %} — {{ a.location }}{% endif %}</td>
+      <td>{{ a.due_date|thai_datetime(a.due_time) }}</td>
+      <td><a class="button small secondary" href="/assignments/{{ a.id }}/edit">แก้ไข</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="page-head">
+    <h2>กำลังจะถึงกำหนด</h2>
+    <a class="button small" href="/assignments/new">+ เพิ่มการบ้าน</a>
+  </div>
+  {% if upcoming %}
+  <table>
+    {% for a in upcoming %}
+    <tr>
+      <td>{{ a.subject_name }}{% if a.location %} — {{ a.location }}{% endif %}</td>
+      <td>{{ a.due_date|thai_datetime(a.due_time) }}</td>
+      <td><a class="button small secondary" href="/assignments/{{ a.id }}/edit">แก้ไข</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">ยังไม่มีการบ้านค้าง</p>
+  {% endif %}
+  <p><a href="/assignments">ดูการบ้านทั้งหมด →</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}สร้างบัญชี — เตือนการบ้าน{% endblock %}
+{% block content %}
+<div class="card auth-box">
+  <h1>สร้างบัญชีเจ้าของระบบ</h1>
+  <form method="post" action="/register" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>อีเมล
+      <input type="email" name="email" value="{{ email or '' }}" required autofocus>
+    </label>
+    <label>รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)
+      <input type="password" name="password" minlength="8" required>
+    </label>
+    <button type="submit">สร้างบัญชี</button>
+  </form>
+  <p class="muted">ระบบนี้มีบัญชีได้เพียงบัญชีเดียว</p>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}การบ้าน — เตือนการบ้าน{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>การบ้าน</h1>
+  <a class="button" href="/assignments/new">+ เพิ่มการบ้าน</a>
+</div>
+
+<div class="card">
+  {% if assignments %}
+  <table>
+    <tr>
+      <th>#</th><th>วิชา</th><th>งาน / สถานที่</th><th>ครู</th>
+      <th>กำหนดส่ง</th><th>สถานะ</th><th></th>
+    </tr>
+    {% for a in assignments %}
+    {% set overdue = is_overdue(a) %}
+    <tr class="{{ 'overdue' if overdue else ('done' if a.status == AssignmentStatus.DONE else '') }}">
+      <td class="mono">{{ a.id }}</td>
+      <td>{{ a.subject_name }}</td>
+      <td>{{ a.location or '—' }}{% if a.notes %} <span class="muted">({{ a.notes }})</span>{% endif %}</td>
+      <td>{{ a.teacher_name or '—' }}</td>
+      <td>{{ a.due_date|thai_datetime(a.due_time) }}</td>
+      <td>
+        {% if overdue %}<span class="badge overdue">เลยกำหนด</span>
+        {% else %}<span class="badge {{ a.status.value }}">{{ 'เสร็จแล้ว' if a.status == AssignmentStatus.DONE else 'ยังไม่เสร็จ' }}</span>{% endif %}
+      </td>
+      <td>
+        <div class="actions">
+          <form method="post" action="/assignments/{{ a.id }}/status" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            {% if a.status == AssignmentStatus.PENDING %}
+            <input type="hidden" name="done" value="1">
+            <button type="submit" class="small">ทำเสร็จ</button>
+            {% else %}
+            <input type="hidden" name="done" value="0">
+            <button type="submit" class="small secondary">ยกเลิกเสร็จ</button>
+            {% endif %}
+          </form>
+          <a class="button small secondary" href="/assignments/{{ a.id }}/edit">แก้ไข</a>
+          <form method="post" action="/assignments/{{ a.id }}/delete" class="inline"
+                onsubmit="return confirm('ลบการบ้านรายการนี้?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="small danger">ลบ</button>
+          </form>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">ยังไม่มีการบ้าน เพิ่มผ่านหน้าเว็บหรือส่งข้อความส่วนตัวถึงบอต Discord</p>
+  {% endif %}
+</div>
+{% endblock %}

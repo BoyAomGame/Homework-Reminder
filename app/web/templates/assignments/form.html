@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ 'แก้ไข' if assignment else 'เพิ่ม' }}การบ้าน — เตือนการบ้าน{% endblock %}
+{% block content %}
+<h1>{{ 'แก้ไขการบ้าน' if assignment else 'เพิ่มการบ้าน' }}</h1>
+
+<div class="card">
+  <form method="post"
+        action="{{ '/assignments/' ~ assignment.id ~ '/edit' if assignment else '/assignments' }}"
+        class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>วิชา *
+      <input type="text" name="subject_name" required
+             value="{{ assignment.subject_name if assignment else '' }}">
+    </label>
+    <label>งาน / สถานที่ (เช่น หนังสือหน้า 5 ใบงาน หรือลิงก์)
+      <input type="text" name="location"
+             value="{{ assignment.location or '' if assignment else '' }}">
+    </label>
+    <label>ครู
+      <input type="text" name="teacher_name"
+             value="{{ assignment.teacher_name or '' if assignment else '' }}">
+    </label>
+    <label>วันที่ส่ง *
+      <input type="date" name="due_date" required
+             value="{{ assignment.due_date.isoformat() if assignment else '' }}">
+    </label>
+    <label>เวลาส่ง (เว้นว่างเพื่อใช้สิ้นวัน)
+      <input type="time" name="due_time"
+             value="{{ assignment.due_time.strftime('%H:%M') if assignment and assignment.due_time else '' }}">
+    </label>
+    <label>หมายเหตุ
+      <textarea name="notes" rows="3">{{ assignment.notes or '' if assignment else '' }}</textarea>
+    </label>
+    <div class="actions">
+      <button type="submit">{{ 'บันทึกการแก้ไข' if assignment else 'เพิ่มการบ้าน' }}</button>
+      <a class="button secondary" href="/assignments">ยกเลิก</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

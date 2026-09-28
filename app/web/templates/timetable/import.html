@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}นำเข้าตารางเรียน — เตือนการบ้าน{% endblock %}
+{% block content %}
+<h1>นำเข้าตารางเรียนจากรูป</h1>
+
+<div class="card">
+  <p class="muted">
+    อัปโหลดรูปหรือภาพหน้าจอตารางเรียน AI จะอ่านข้อมูลแล้วให้คุณตรวจและแก้ไขทุกแถวก่อนบันทึก
+  </p>
+  <form method="post" action="/timetable/import" enctype="multipart/form-data" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>รูปตารางเรียน (ไม่เกิน 8 MB)
+      <input type="file" name="image" accept="image/*" required>
+    </label>
+    <div class="actions">
+      <button type="submit">อ่านตารางเรียน</button>
+      <a class="button secondary" href="/timetable">ยกเลิก</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}เตือนการบ้าน{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">📚 เตือนการบ้าน</a>
+  {% if user %}
+  <nav>
+    <a href="/assignments">การบ้าน</a>
+    <a href="/timetable">ตารางเรียน</a>
+    <a href="/settings">ตั้งค่า</a>
+    <form method="post" action="/logout" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" class="link-button">ออกจากระบบ</button>
+    </form>
+  </nav>
+  {% endif %}
+</header>
+<main>
+  {% if error %}<p class="flash error">{{ error }}</p>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}เข้าสู่ระบบ — เตือนการบ้าน{% endblock %}
+{% block content %}
+<div class="card auth-box">
+  <h1>เข้าสู่ระบบ</h1>
+  <form method="post" action="/login" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>อีเมล
+      <input type="email" name="email" value="{{ email or '' }}" required autofocus>
+    </label>
+    <label>รหัสผ่าน
+      <input type="password" name="password" required>
+    </label>
+    <button type="submit">เข้าสู่ระบบ</button>
+  </form>
+  <p class="muted">เริ่มใช้งานครั้งแรก? <a href="/register">สร้างบัญชีเจ้าของระบบ</a></p>
+</div>
+{% endblock %}
